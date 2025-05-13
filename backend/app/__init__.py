@@ -1,0 +1,1 @@
+"""Package marker – main FastAPI app is defined in main.py."""

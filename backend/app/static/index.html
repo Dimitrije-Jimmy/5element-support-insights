@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>5Element LLM Tester</title>
+  <script>
+    async function sendChat() {
+      const msg = document.getElementById("msg").value;
+      const res = await fetch("/api/v1/chat/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: msg, history: [] })
+      });
+      const data = await res.json();
+      document.getElementById("answer").innerText = data.answer || res.statusText;
+    }
+
+    async function fetchMetrics() {
+      const cat = document.getElementById("cat").value;
+      const src = document.querySelector("input[name=source]:checked")?.value;
+      const res = await fetch(`/api/v1/messages/metrics?category=${cat}&source=${src}`);
+      const data = await res.json();
+      document.getElementById("metrics").innerText = JSON.stringify(data, null, 2);
+    }
+  </script>
+</head>
+<body style="font-family: sans-serif; max-width: 700px; margin: auto">
+  <h2>Chat test</h2>
+  <input id="msg" placeholder="Ask me…" style="width:80%" />
+  <button onclick="sendChat()">Send</button>
+  <pre id="answer" style="background:#eee; padding:10px"></pre>
+
+  <h2>Metrics test</h2>
+  Category:
+  <select id="cat">
+    <option value="">(any)</option>
+    <option>bonus</option><option>deposit</option>
+    <option>withdraw</option><option>login</option><option>angry</option>
+  </select>
+  Source:
+  <label><input type="radio" name="source" value="livechat">LiveChat</label>
+  <label><input type="radio" name="source" value="telegram">Telegram</label>
+  <label><input type="radio" name="source" value="">(any)</label>
+  <button onclick="fetchMetrics()">Run</button>
+  <pre id="metrics" style="background:#eee; padding:10px"></pre>
+</body>
+</html>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<canvas id="trend" width="600" height="200"></canvas>
+<script>
+function draw(data){
+  const ctx=document.getElementById('trend');
+  new Chart(ctx,{type:'line',data:{
+      labels:data.map(d=>d.date),
+      datasets:[{label:'Messages',data:data.map(d=>d.count)}]
+  }});
+}
+</script>

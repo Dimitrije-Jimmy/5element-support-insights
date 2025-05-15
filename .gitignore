@@ -64,4 +64,4 @@ log/
 
 # OS
 .DS_Store
-Thumbs.db
+Thumbs.dbbackend/distilbert-classifier-saved/model.safetensors

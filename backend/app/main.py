@@ -38,6 +38,11 @@ def create_app() -> FastAPI:
     # Mount static files last
     app.mount("/", StaticFiles(directory=static_dir, html=True), name="static")
 
+    # Health check endpoint
+    @app.get("/health")
+    async def health_check():
+        return {"status": "healthy"}
+
     return app
 
 app = create_app()

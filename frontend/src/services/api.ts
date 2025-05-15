@@ -1,7 +1,9 @@
-
 import { toast } from "sonner";
 
+//const BASE_URL = "/api/v1";
+//const BASE_URL = "http://localhost:8000/api/v1";
 const BASE_URL = "/api/v1";
+
 
 interface ChatRequest {
   message: string;
@@ -54,10 +56,23 @@ const handleError = (error: Error) => {
 };
 
 export const api = {
+  // Get categories
+  getCategories: async (): Promise<string[]> => {
+    try {
+      const response = await fetch(`${BASE_URL}/messages/categories`);
+      if (!response.ok) {
+        throw new Error(`HTTP error ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      return handleError(error as Error);
+    }
+  },
+
   // Chat endpoint
   sendChatMessage: async (request: ChatRequest): Promise<ChatResponse> => {
     try {
-      const response = await fetch(`${BASE_URL}/chat/`, {
+      const response = await fetch(`${BASE_URL}/chat`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -78,7 +93,7 @@ export const api = {
   // Stream chat response
   streamChatMessage: async (request: ChatRequest): Promise<ReadableStream> => {
     try {
-      const response = await fetch(`${BASE_URL}/chat/`, {
+      const response = await fetch(`${BASE_URL}/chat`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -28,10 +28,15 @@ class Message(BaseModel):
 # ──────────────────────────
 # Chat endpoint DTOs
 # ──────────────────────────
+class ChatHistoryItem(BaseModel):
+    role: str
+    content: str
+
 class ChatRequest(BaseModel):
     message: str
-    history: List[str] = []              # previous turns (optional)
-    model: str | None = None             # allow client to request e.g. "gemini"
+    history: List[ChatHistoryItem] = []
+    model: str | None = None
 
 class ChatResponse(BaseModel):
-    answer: str
+    response: str
+    context: str | None = None

@@ -18,7 +18,12 @@ def fetch_messages(
 ) -> pd.DataFrame:
     query = supabase.table("messages").select("*")
     if category:
-        query = query.eq("category", category)
+        # Handle multiple categories
+        categories = category.split(',') if ',' in category else [category]
+        if len(categories) == 1:
+            query = query.eq("category", categories[0])
+        else:
+            query = query.in_("category", categories)
     if source:
         query = query.eq("source", source)
     if start:
@@ -26,26 +31,49 @@ def fetch_messages(
     if end:
         query = query.lte("timestamp", end.isoformat())
 
-    data = query.execute().data  # type: ignore
-    return pd.DataFrame(data)
+    data = query.execute().data
+    df = pd.DataFrame(data)
+    if not df.empty:
+        df['timestamp'] = pd.to_datetime(df['timestamp'])
+    return df
 
 
 def basic_metrics(df: pd.DataFrame) -> Dict[str, Any]:
     if df.empty:
-        return {"messages": 0, "unique_users": 0}
+        return {
+            "total_messages": 0,
+            "unique_users": 0,
+            "categories": {}
+        }
+    
+    category_counts = df.groupby('category').size().to_dict()
+    
     return {
-        "messages": len(df),
+        "total_messages": len(df),
         "unique_users": df["id_user"].nunique(),
+        "categories": category_counts
     }
 
 
-
-def spike_dates(df: pd.DataFrame, threshold: int = 3) -> List[Tuple[str, int]]:
+def spike_dates(df: pd.DataFrame, threshold: float = 2.0) -> List[Dict[str, Any]]:
     """Return dates where count > mean + threshold*std."""
     if df.empty:
         return []
 
-    daily = df.groupby(df["timestamp"].str[:10]).size()
+    # Group by date and count messages
+    daily = df.groupby(df['timestamp'].dt.date).size()
+    
+    if len(daily) < 2:  # Need at least 2 points for std
+        return []
+
     mean, std = daily.mean(), daily.std()
     spikes = daily[daily > mean + threshold * std]
-    return list(spikes.items())
+    
+    return [
+        {
+            "date": date.strftime("%Y-%m-%d"),
+            "count": int(count),
+            "message": f"Spike of {int(count)} messages (vs avg {int(mean)})"
+        }
+        for date, count in spikes.items()
+    ]

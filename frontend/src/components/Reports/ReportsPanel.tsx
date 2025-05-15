@@ -1,13 +1,19 @@
-
 import React, { useState } from "react";
 import FilterPanel, { FiltersState } from "./FilterPanel";
 import MetricsCards from "./MetricsCards";
 import Charts from "./Charts";
 import { api } from "@/services/api";
 
+const initialMetricsData = {
+  totalMessages: 0,
+  uniqueUsers: 0,
+  spikeAlerts: [],
+  daily_counts: []
+};
+
 const ReportsPanel: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [metricsData, setMetricsData] = useState<any>(null);
+  const [metricsData, setMetricsData] = useState(initialMetricsData);
 
   const handleApplyFilters = async (filters: FiltersState) => {
     setIsLoading(true);
@@ -21,13 +27,14 @@ const ReportsPanel: React.FC = () => {
       });
       
       setMetricsData({
-        totalMessages: response.total_messages,
-        uniqueUsers: response.unique_users,
-        spikeAlerts: response.spike_alerts,
-        daily_counts: response.daily_counts,
+        totalMessages: response.total_messages || 0,
+        uniqueUsers: response.unique_users || 0,
+        spikeAlerts: response.spike_alerts || [],
+        daily_counts: response.daily_counts || [],
       });
     } catch (error) {
       console.error("Error fetching metrics:", error);
+      setMetricsData(initialMetricsData);
     } finally {
       setIsLoading(false);
     }

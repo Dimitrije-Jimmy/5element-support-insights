@@ -1,5 +1,4 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -20,6 +19,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { MultiSelect } from "@/components/ui/multi-select";
+import { api } from "@/services/api";
 
 export interface FiltersState {
   categories: string[];
@@ -35,30 +36,30 @@ interface FilterPanelProps {
   isLoading: boolean;
 }
 
-const CATEGORIES = [
-  "Account",
-  "Deposit",
-  "Withdrawal",
-  "Technical",
-  "Security",
-  "Compliance",
-  "Other",
-];
-
 const FilterPanel: React.FC<FilterPanelProps> = ({ onApplyFilters, isLoading }) => {
   const [isOpen, setIsOpen] = useState(true);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
-  
+  const [categories, setCategories] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [source, setSource] = useState<string>("any");
   
-  const [startDate, setStartDate] = useState<Date>(
-    new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-  );
-  const [endDate, setEndDate] = useState<Date>(new Date());
+  const [startDate, setStartDate] = useState<Date>(new Date('2024-01-01'));
+  const [endDate, setEndDate] = useState<Date>(new Date('2025-01-30'));
 
-  const handleCategoryChange = (value: string) => {
-    setSelectedCategories(value === "" ? [] : value.split(","));
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await api.getCategories();
+        setCategories(response);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  const handleCategoryChange = (values: string[]) => {
+    setSelectedCategories(values);
   };
 
   const handleDatePresetClick = (days: number) => {
@@ -102,36 +103,14 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onApplyFilters, isLoading }) 
             {/* Categories */}
             <div className="space-y-2">
               <Label htmlFor="categories">Categories</Label>
-              <Select
-                onValueChange={handleCategoryChange}
-                value={selectedCategories.join(",")}
-              >
-                <SelectTrigger id="categories" className="w-full">
-                  <SelectValue placeholder="Select categories" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectItem value="all-categories">All Categories</SelectItem>
-                    {CATEGORIES.map((category) => (
-                      <SelectItem key={category} value={category}>
-                        {category}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-              {selectedCategories.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-2">
-                  {selectedCategories.map((category) => (
-                    <div
-                      key={category}
-                      className="bg-secondary text-xs py-1 px-2 rounded-full"
-                    >
-                      {category}
-                    </div>
-                  ))}
-                </div>
-              )}
+              <MultiSelect
+                id="categories"
+                options={categories.map(cat => ({ label: cat, value: cat }))}
+                value={selectedCategories}
+                onChange={handleCategoryChange}
+                placeholder="Select categories"
+                className="w-full"
+              />
             </div>
 
             {/* Source */}

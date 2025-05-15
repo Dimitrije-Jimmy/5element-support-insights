@@ -1,7 +1,22 @@
+# Environment variables
+.env
+.env.*
+*.env
+
+# Model files
+backend/distilbert-classifier-saved/
+backend/models/distilbert_classifier/*.safetensors
+backend/models/distilbert_classifier/*.bin
+backend/models/distilbert_classifier/*.model
+backend/models/*/model.*
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+
 # Python
 __pycache__/
 *.py[cod]
-*$py.class
 *.so
 .Python
 build/
@@ -24,11 +39,7 @@ wheels/
 venv/
 env/
 ENV/
-
-# Environment Variables
-.env
-.env.local
-.env.*.local
+.venv/
 
 # IDE
 .idea/
@@ -43,9 +54,6 @@ yarn-debug.log*
 yarn-error.log*
 
 # Model files and large data
-backend/models/distilbert_classifier/model.safetensors
-backend/models/distilbert_classifier/*.bin
-backend/models/distilbert_classifier/tokenizer.json
 backend/data/*.csv
 *.csv
 

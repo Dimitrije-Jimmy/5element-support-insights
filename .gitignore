@@ -65,3 +65,5 @@ log/
 # OS
 .DS_Store
 Thumbs.dbbackend/distilbert-classifier-saved/model.safetensors
+.env
+.env.example
